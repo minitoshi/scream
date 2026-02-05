@@ -1,6 +1,15 @@
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ScreamClient } from "../app/client";
 
+export interface WebhookConfig {
+  /** Generic webhook URL (receives JSON POST) */
+  url?: string;
+  /** Telegram bot token */
+  telegramToken?: string;
+  /** Telegram chat ID to send alerts to */
+  telegramChatId?: string;
+}
+
 export interface GuardianConfig {
   walletAddress: PublicKey;
   balanceDropThreshold: number;
@@ -10,6 +19,7 @@ export interface GuardianConfig {
   duressPin?: string;
   attackerAddress?: PublicKey;
   pollIntervalMs: number;
+  webhook?: WebhookConfig;
 }
 
 interface TxEvent {
@@ -155,6 +165,18 @@ export class GuardianAgent {
 
       this.alertCount++;
 
+      // Send webhook alert for balance drop
+      await this.sendWebhookAlert({
+        type: "BALANCE_DROP",
+        wallet: this.config.walletAddress.toBase58(),
+        riskScore,
+        previousBalance: this.formatSol(oldBalance),
+        currentBalance: this.formatSol(newBalance),
+        change: `-${this.formatSol(Math.abs(change))}`,
+        message: `${dropPercent.toFixed(1)}% balance drop detected. Risk: ${this.riskLabel(riskScore)}`,
+        timestamp: new Date().toISOString(),
+      });
+
       // Check for rapid successive transactions
       const recentOutflows = this.recentEvents.filter(
         (e) => e.balanceChange < 0
@@ -169,6 +191,17 @@ export class GuardianAgent {
       // Critical threshold check
       if (riskScore >= 80) {
         this.log("CRIT", "THREAT LEVEL CRITICAL");
+
+        await this.sendWebhookAlert({
+          type: "CRITICAL",
+          wallet: this.config.walletAddress.toBase58(),
+          riskScore,
+          previousBalance: this.formatSol(oldBalance),
+          currentBalance: this.formatSol(newBalance),
+          change: `-${this.formatSol(Math.abs(change))}`,
+          message: `THREAT LEVEL CRITICAL. ${this.config.autoTriggerPanic ? "Auto-panic initiating." : "Manual intervention required."}`,
+          timestamp: new Date().toISOString(),
+        });
 
         if (this.config.autoTriggerPanic && this.config.duressPin) {
           await this.executePanic();
@@ -270,6 +303,13 @@ export class GuardianAgent {
       console.log("         - Wallet flagged as compromised");
       console.log("         - Attacker address flagged");
       this.log("EXEC", "=== CASCADE COMPLETE ===\n");
+
+      await this.sendWebhookAlert({
+        type: "PANIC_EXECUTED",
+        wallet: this.config.walletAddress.toBase58(),
+        message: `Panic cascade executed. TX: ${tx}. Funds locked, ${config.contacts.length} contacts alerted, attacker flagged.`,
+        timestamp: new Date().toISOString(),
+      });
     } catch (err: any) {
       this.log("ERROR", `Panic execution failed: ${err.message}`);
     }
@@ -307,6 +347,16 @@ export class GuardianAgent {
     console.log(
       `   Poll:       ${this.config.pollIntervalMs / 1000}s`
     );
+    if (this.config.webhook?.url) {
+      console.log(
+        `   Webhook:    ${this.config.webhook.url}`
+      );
+    }
+    if (this.config.webhook?.telegramToken) {
+      console.log(
+        `   Telegram:   chat ${this.config.webhook.telegramChatId}`
+      );
+    }
     console.log(
       "  ============================================"
     );
@@ -339,6 +389,75 @@ export class GuardianAgent {
     const ts = new Date().toISOString().slice(11, 23);
     const pad = level.length < 5 ? " ".repeat(5 - level.length) : "";
     console.log(`  [${ts}] ${level}${pad} ${msg}`);
+  }
+
+  private async sendWebhookAlert(event: {
+    type: string;
+    wallet: string;
+    riskScore?: number;
+    previousBalance?: string;
+    currentBalance?: string;
+    change?: string;
+    message: string;
+    timestamp: string;
+  }): Promise<void> {
+    const webhook = this.config.webhook;
+    if (!webhook) return;
+
+    // Send to generic webhook URL
+    if (webhook.url) {
+      try {
+        const res = await fetch(webhook.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(event),
+        });
+        if (!res.ok) {
+          this.log("WARN", `Webhook POST failed: ${res.status}`);
+        }
+      } catch (err: any) {
+        this.log("WARN", `Webhook error: ${err.message}`);
+      }
+    }
+
+    // Send to Telegram
+    if (webhook.telegramToken && webhook.telegramChatId) {
+      try {
+        const icon = event.type === "CRITICAL" ? "\u{1F6A8}" :
+                     event.type === "PANIC_EXECUTED" ? "\u{2620}\u{FE0F}" :
+                     event.type === "BALANCE_DROP" ? "\u{26A0}\u{FE0F}" : "\u{1F514}";
+        const text = [
+          `${icon} *SCREAM Guardian Alert*`,
+          ``,
+          `*${event.type}*`,
+          `Wallet: \`${event.wallet}\``,
+          event.riskScore !== undefined ? `Risk: ${event.riskScore}/100` : null,
+          event.previousBalance ? `Previous: ${event.previousBalance} SOL` : null,
+          event.currentBalance ? `Current: ${event.currentBalance} SOL` : null,
+          event.change ? `Change: ${event.change} SOL` : null,
+          ``,
+          event.message,
+          ``,
+          `_${event.timestamp}_`,
+        ].filter(Boolean).join("\n");
+
+        const url = `https://api.telegram.org/bot${webhook.telegramToken}/sendMessage`;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: webhook.telegramChatId,
+            text,
+            parse_mode: "Markdown",
+          }),
+        });
+        if (!res.ok) {
+          this.log("WARN", `Telegram alert failed: ${res.status}`);
+        }
+      } catch (err: any) {
+        this.log("WARN", `Telegram error: ${err.message}`);
+      }
+    }
   }
 
   private sleep(ms: number): Promise<void> {

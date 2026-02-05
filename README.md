@@ -22,6 +22,22 @@ SCREAM fills that gap. When you're under duress, enter your panic PIN instead of
 
 After you're safe, your emergency contacts approve fund recovery through multi-sig verification.
 
+## How SCREAM Differs from Existing Solutions
+
+Deus Wallet shipped a "duress mode" in December 2024. Here's why SCREAM is fundamentally different:
+
+| | **SCREAM** | **Deus Wallet** |
+|---|---|---|
+| **Verifiability** | Fully on-chain, open-source Solana program — anyone can audit | Proprietary, closed-source logic |
+| **Autonomous agent** | Guardian Agent monitors 24/7, auto-triggers panic on threat detection | No autonomous monitoring |
+| **Attacker flagging** | Permanent on-chain registry — attacker addresses flagged forever, visible to the entire ecosystem | No attacker tracking |
+| **Architecture** | SDK/infrastructure for any wallet to integrate | Standalone wallet only |
+| **Alerts** | On-chain contact alerts + webhook/Telegram notifications | In-app only |
+| **Recovery** | Multi-sig with emergency contacts, time-locked vault | Single-user recovery |
+| **Chain** | Solana (<1s cascade) | Multi-chain but no speed guarantee |
+
+SCREAM isn't a wallet. It's **protection infrastructure** that lives inside your existing wallet.
+
 ## Deployed on Devnet
 
 | Detail | Value |
@@ -178,6 +194,27 @@ yarn agent \
   --pin "YOUR_DURESS_PIN" \
   --attacker "DEFAULT_ATTACKER_ADDRESS"
 ```
+
+### With Webhook Alerts
+
+```bash
+yarn agent \
+  --wallet "YOUR_WALLET_ADDRESS" \
+  --threshold 50 \
+  --webhook "https://your-server.com/alert"
+```
+
+### With Telegram Alerts
+
+```bash
+yarn agent \
+  --wallet "YOUR_WALLET_ADDRESS" \
+  --threshold 50 \
+  --telegram-token "BOT_TOKEN" \
+  --telegram-chat "CHAT_ID"
+```
+
+Alert payloads include event type, wallet address, risk score, balance change, and timestamp. Telegram messages are formatted with Markdown for readability.
 
 ### Risk Scoring
 

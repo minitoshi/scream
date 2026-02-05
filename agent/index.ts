@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { PublicKey } from "@solana/web3.js";
 import { ScreamClient, loadProvider } from "../app/client";
-import { GuardianAgent, GuardianConfig } from "./guardian";
+import { GuardianAgent, GuardianConfig, WebhookConfig } from "./guardian";
 
 const program = new Command();
 program
@@ -32,6 +32,9 @@ program
   .option("--pin <pin>", "Duress PIN (required with --auto-panic)")
   .option("--attacker <address>", "Default attacker address for auto-panic")
   .option("--poll <ms>", "Polling interval in milliseconds", "5000")
+  .option("--webhook <url>", "Webhook URL for alert notifications (receives JSON POST)")
+  .option("--telegram-token <token>", "Telegram bot token for alerts")
+  .option("--telegram-chat <id>", "Telegram chat ID for alerts")
   .action(async (opts) => {
     if (opts.autoPanic && !opts.pin) {
       console.error(
@@ -42,6 +45,15 @@ program
 
     const provider = loadProvider();
     const client = new ScreamClient(provider);
+
+    let webhook: WebhookConfig | undefined;
+    if (opts.webhook || opts.telegramToken) {
+      webhook = {
+        url: opts.webhook,
+        telegramToken: opts.telegramToken,
+        telegramChatId: opts.telegramChat,
+      };
+    }
 
     const config: GuardianConfig = {
       walletAddress: new PublicKey(opts.wallet),
@@ -54,6 +66,7 @@ program
         ? new PublicKey(opts.attacker)
         : undefined,
       pollIntervalMs: parseInt(opts.poll),
+      webhook,
     };
 
     const agent = new GuardianAgent(client, provider.connection, config);
