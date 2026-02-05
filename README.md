@@ -4,6 +4,10 @@
 
 Duress-activated protection for Solana wallets. One trigger. Everything protected.
 
+> **Vision:** SCREAM is not a standalone dApp. It's on-chain infrastructure and an SDK that wallet providers (Phantom, Solflare, Backpack) integrate natively. Protection lives inside your wallet — invisible until you need it.
+
+**[Live Wallet Demo](demo/index.html)** | **[Devnet Program](https://explorer.solana.com/address/5zPdLCuRqcPqN5TZxR6yUcfTJ9ufLhoZAMVn6pEFXnyc?cluster=devnet)** | **[SDK Docs](#sdk-integration)**
+
 ## The Problem
 
 Physical attacks on crypto holders have increased **169%** (Jameson Lopp tracking data). Criminals use the "$5 wrench attack" — why hack a wallet when you can threaten the owner? Hardware wallets, multi-sig, and cold storage protect against digital threats. **Nothing protects you during a physical attack.**
@@ -211,26 +215,77 @@ The test suite covers the complete flow: initialization, deposit, panic trigger,
 
 The entire panic cascade completes before an attacker realizes anything happened.
 
+## Wallet Demo
+
+Open `demo/index.html` in any browser. No build step, no dependencies.
+
+The demo simulates what SCREAM looks like integrated inside a wallet:
+1. **Setup** — Configure duress PIN, emergency contacts, vault
+2. **Armed** — Protection is active, Guardian Agent monitoring
+3. **Panic trigger** — Enter duress PIN, watch the cascade execute in <1s
+4. **Recovery** — Contacts approve, funds returned to owner
+
+This is a visual prototype — the on-chain program is real and deployed to devnet.
+
+## SDK Integration
+
+For wallet providers integrating SCREAM, the SDK (`app/client.ts`) provides:
+
+```typescript
+import { ScreamClient } from "@scream/sdk";
+import { AnchorProvider } from "@coral-xyz/anchor";
+
+// Use your wallet adapter's provider
+const provider = new AnchorProvider(connection, walletAdapter, {});
+const client = new ScreamClient(provider);
+
+// One-call status for your UI
+const status = await client.getProtectionStatus(walletAddress);
+// Returns: { configured, config, vault, vaultBalance, walletBalance,
+//            contacts: [{address, status}], isCompromised, timeLockRemaining }
+
+// Initialize protection
+await client.initializeConfig({
+  pin: "DURESS_PIN",
+  contacts: [contact1, contact2, contact3],
+  recoveryThreshold: 2,
+  timeLockDuration: 86400,  // 24 hours
+  decoyLamports: 50_000_000, // 0.05 SOL
+});
+
+// Trigger cascade (single Solana transaction, <1s)
+await client.triggerPanic(pin, attackerAddress, contacts);
+
+// Recovery flow
+await client.initiateRecovery();
+await client.approveRecovery(ownerAddress, contactKeypair);
+await client.claimFromVault();
+```
+
+All types are exported: `PanicConfig`, `Vault`, `AlertAccount`, `AttackerFlag`, `CompromisedFlag`, `ProtectionStatus`.
+
 ## Project Structure
 
 ```
 scream/
-  programs/scream/src/    Solana program (Rust)
+  programs/scream/src/    Solana program (Rust/Anchor)
     lib.rs                Entry point & instruction handlers
     state/                On-chain account structures
     instructions/         Instruction implementations
     errors.rs             Custom error codes
     events.rs             Event definitions
   app/
-    client.ts             TypeScript SDK for the program
-    cli.ts                CLI tool
+    client.ts             SDK for wallet integration
+    cli.ts                CLI tool for testing
   agent/
-    guardian.ts           Wallet monitoring agent
+    guardian.ts           Autonomous wallet monitoring agent
     index.ts              Agent entry point
+  demo/
+    index.html            Interactive wallet mock demo
   tests/
     scream.ts             Integration test suite
   idl/
-    scream.json           Program IDL (Interface Definition)
+    scream.json           Program IDL
 ```
 
 ## License

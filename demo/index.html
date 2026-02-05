@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SCREAM — Wallet Protection Demo</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --surface: #18181b;
+    --surface2: #222226;
+    --border: #2a2a2e;
+    --text: #fafafa;
+    --text2: #a1a1aa;
+    --purple: #ab9ff2;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f59e0b;
+    --blue: #3b82f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #050505;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-frame {
+    width: 375px;
+    min-height: 700px;
+    background: var(--bg);
+    border-radius: 40px;
+    border: 3px solid var(--border);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 80px rgba(171, 159, 242, 0.08);
+  }
+
+  .notch {
+    width: 150px;
+    height: 28px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px 8px;
+  }
+  .header-left { display: flex; align-items: center; gap: 8px; }
+  .wallet-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), #7c3aed);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .wallet-name { font-size: 14px; font-weight: 600; }
+  .wallet-addr { font-size: 11px; color: var(--text2); }
+  .network-badge {
+    font-size: 10px; color: var(--green); background: rgba(34,197,94,0.1);
+    padding: 3px 8px; border-radius: 10px; font-weight: 600;
+  }
+
+  /* Balance */
+  .balance-section { text-align: center; padding: 20px 20px 16px; }
+  .balance-amount { font-size: 40px; font-weight: 700; letter-spacing: -1px; }
+  .balance-usd { font-size: 14px; color: var(--text2); margin-top: 2px; }
+
+  /* Action buttons */
+  .actions {
+    display: flex; justify-content: center; gap: 16px;
+    padding: 0 20px 20px;
+  }
+  .action-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    background: none; border: none; color: var(--text); cursor: pointer;
+    font-size: 11px; font-weight: 500;
+  }
+  .action-btn .icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--surface2); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 18px; transition: all 0.2s;
+  }
+  .action-btn:hover .icon { background: var(--border); }
+  .action-btn.scream-btn .icon {
+    background: linear-gradient(135deg, rgba(171,159,242,0.2), rgba(124,58,237,0.2));
+    border: 1.5px solid var(--purple);
+  }
+  .action-btn.scream-btn { color: var(--purple); font-weight: 600; }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex; border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+  }
+  .tab {
+    padding: 10px 16px; font-size: 13px; color: var(--text2);
+    cursor: pointer; border-bottom: 2px solid transparent;
+    font-weight: 500; transition: all 0.2s;
+  }
+  .tab.active { color: var(--text); border-color: var(--purple); }
+
+  /* Content panels */
+  .panel { display: none; padding: 16px 20px; }
+  .panel.active { display: block; }
+
+  /* Activity list */
+  .activity-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  .activity-left { display: flex; align-items: center; gap: 12px; }
+  .activity-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface2); display: flex;
+    align-items: center; justify-content: center; font-size: 16px;
+  }
+  .activity-label { font-size: 13px; font-weight: 500; }
+  .activity-time { font-size: 11px; color: var(--text2); }
+  .activity-amount { font-size: 13px; font-weight: 600; text-align: right; }
+  .activity-amount.positive { color: var(--green); }
+  .activity-amount.negative { color: var(--text); }
+
+  /* SCREAM panel */
+  .scream-status {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .status-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .status-title { font-size: 14px; font-weight: 600; }
+  .status-badge {
+    font-size: 11px; font-weight: 700; padding: 4px 10px;
+    border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .badge-armed { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-panic { background: rgba(239,68,68,0.15); color: var(--red); animation: pulse-red 1.5s infinite; }
+  .badge-recovering { background: rgba(245,158,11,0.15); color: var(--orange); }
+  .badge-recovered { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .badge-setup { background: rgba(161,161,170,0.15); color: var(--text2); }
+
+  @keyframes pulse-red {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .status-row {
+    display: flex; justify-content: space-between;
+    padding: 6px 0; font-size: 13px;
+  }
+  .status-label { color: var(--text2); }
+  .status-value { font-weight: 500; }
+
+  .contact-list { margin-top: 16px; }
+  .contact-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .contact-left { display: flex; align-items: center; gap: 10px; }
+  .contact-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .dot-standby { background: var(--text2); }
+  .dot-alerted { background: var(--orange); animation: pulse-red 1.5s infinite; }
+  .dot-approved { background: var(--green); }
+  .contact-status { font-size: 11px; color: var(--text2); }
+
+  /* Buttons */
+  .btn {
+    width: 100%; padding: 14px; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; margin-top: 12px;
+  }
+  .btn-primary { background: var(--purple); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { filter: brightness(1.1); }
+  .btn-outline {
+    background: none; border: 1.5px solid var(--border); color: var(--text);
+  }
+  .btn-outline:hover { border-color: var(--text2); }
+
+  /* Cascade animation */
+  .cascade-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.92);
+    display: none; flex-direction: column;
+    justify-content: center; padding: 30px;
+    z-index: 10;
+  }
+  .cascade-overlay.active { display: flex; }
+  .cascade-title {
+    font-size: 18px; font-weight: 700; text-align: center;
+    margin-bottom: 30px;
+  }
+  .cascade-step {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; font-size: 13px; opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.4s ease;
+  }
+  .cascade-step.visible {
+    opacity: 1; transform: translateX(0);
+  }
+  .cascade-check {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0;
+  }
+  .check-pending { background: var(--surface2); color: var(--text2); }
+  .check-done { background: rgba(34,197,94,0.2); color: var(--green); }
+  .cascade-timer {
+    text-align: center; margin-top: 20px;
+    font-size: 13px; color: var(--text2);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .cascade-timer.visible { opacity: 1; }
+  .cascade-elapsed {
+    font-size: 28px; font-weight: 700; color: var(--green);
+    margin-top: 4px;
+  }
+  .cascade-dismiss {
+    margin-top: 24px; opacity: 0; transition: opacity 0.4s;
+  }
+  .cascade-dismiss.visible { opacity: 1; }
+
+  /* PIN modal */
+  .pin-modal {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.95);
+    display: none; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 30px; z-index: 10;
+  }
+  .pin-modal.active { display: flex; }
+  .pin-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .pin-subtitle { font-size: 12px; color: var(--text2); margin-bottom: 24px; text-align: center; }
+  .pin-dots {
+    display: flex; gap: 12px; margin-bottom: 30px;
+  }
+  .pin-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid var(--border); transition: all 0.15s;
+  }
+  .pin-dot.filled { background: var(--purple); border-color: var(--purple); }
+  .pin-pad {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; width: 260px;
+  }
+  .pin-key {
+    width: 76px; height: 56px; border-radius: 12px;
+    background: var(--surface2); border: none; color: var(--text);
+    font-size: 22px; font-weight: 500; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.1s;
+  }
+  .pin-key:active { background: var(--border); transform: scale(0.95); }
+  .pin-key.empty { visibility: hidden; }
+  .pin-key.delete { font-size: 14px; }
+
+  /* Setup form */
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%; padding: 12px; border-radius: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-size: 13px; outline: none;
+  }
+  .form-input:focus { border-color: var(--purple); }
+  .form-hint { font-size: 11px; color: var(--text2); margin-top: 4px; }
+
+  /* Info banner */
+  .info-banner {
+    background: linear-gradient(135deg, rgba(171,159,242,0.08), rgba(124,58,237,0.08));
+    border: 1px solid rgba(171,159,242,0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .info-banner strong { color: var(--purple); }
+
+  .section-title {
+    font-size: 13px; font-weight: 600; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin: 16px 0 10px;
+  }
+
+  /* Devnet label */
+  .devnet-bar {
+    background: rgba(34,197,94,0.08);
+    text-align: center; padding: 6px;
+    font-size: 10px; color: var(--green);
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-frame" id="app">
+  <div class="devnet-bar">SCREAM PROTOCOL &mdash; DEVNET DEMO</div>
+  <div class="notch"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="wallet-icon">P</div>
+      <div>
+        <div class="wallet-name">Main Wallet</div>
+        <div class="wallet-addr">3ED5...Y6VLi</div>
+      </div>
+    </div>
+    <div class="network-badge">Devnet</div>
+  </div>
+
+  <!-- Balance -->
+  <div class="balance-section">
+    <div class="balance-amount" id="balance">12.40 SOL</div>
+    <div class="balance-usd">$2,356.00</div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="action-btn"><div class="icon">&#8593;</div>Send</button>
+    <button class="action-btn"><div class="icon">&#8595;</div>Receive</button>
+    <button class="action-btn"><div class="icon">&#8644;</div>Swap</button>
+    <button class="action-btn scream-btn" onclick="showTab('scream')">
+      <div class="icon">&#9888;</div>SCREAM
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="showTab('activity')">Activity</div>
+    <div class="tab" onclick="showTab('scream')">Protection</div>
+  </div>
+
+  <!-- Activity Panel -->
+  <div class="panel active" id="panel-activity">
+    <div class="activity-item">
+      <div class="activity-left">
+        <div class="activity-icon">&#8595;</div>
+        <div>
+          <div class="activity-label">Received SOL</div>
+          <div class="activity-time">Today, 2:14 PM</div>
+        </div>
+      </div>
+      <div class="activity-amount positive">+2.00 SOL</div>
+    </div>
+    <div class="activity-item">
+      <div class="activity-left">
+        <div class="activity-icon">&#8593;</div>
+        <div>
+          <div class="activity-label">Sent SOL</div>
+          <div class="activity-time">Today, 11:30 AM</div>
+        </div>
+      </div>
+      <div class="activity-amount negative">-0.50 SOL</div>
+    </div>
+    <div class="activity-item">
+      <div class="activity-left">
+        <div class="activity-icon">&#8644;</div>
+        <div>
+          <div class="activity-label">Swapped USDC &rarr; SOL</div>
+          <div class="activity-time">Yesterday</div>
+        </div>
+      </div>
+      <div class="activity-amount positive">+5.20 SOL</div>
+    </div>
+    <div class="activity-item">
+      <div class="activity-left">
+        <div class="activity-icon" style="font-size:14px">&#9888;</div>
+        <div>
+          <div class="activity-label">SCREAM Protection Activated</div>
+          <div class="activity-time">2 days ago</div>
+        </div>
+      </div>
+      <div class="activity-amount" style="color:var(--purple)">5.00 SOL</div>
+    </div>
+  </div>
+
+  <!-- SCREAM Panel -->
+  <div class="panel" id="panel-scream">
+    <!-- State: not configured -->
+    <div id="state-setup">
+      <div class="info-banner">
+        <strong>SCREAM Protection</strong><br>
+        Set up a duress PIN. If you're ever physically threatened,
+        enter this PIN instead of your real one. Your funds move to a
+        time-locked vault, contacts are alerted, and the attacker
+        gets a small decoy. It all looks like a normal transaction.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Duress PIN</label>
+        <input class="form-input" type="password" id="setup-pin" placeholder="Enter 6-digit duress PIN" maxlength="6">
+        <div class="form-hint">This PIN triggers protection. Your normal PIN stays the same.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Emergency Contacts</label>
+        <input class="form-input" id="setup-c1" placeholder="Contact 1 wallet address" value="Alex M. (DqhS...rEox)">
+        <input class="form-input" style="margin-top:8px" id="setup-c2" placeholder="Contact 2 wallet address" value="Sarah K. (Gbad...J7Zj)">
+        <input class="form-input" style="margin-top:8px" id="setup-c3" placeholder="Contact 3 wallet address" value="Mike T. (3jPa...dnWL)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Recovery Threshold</label>
+        <input class="form-input" value="2 of 3 contacts" readonly>
+        <div class="form-hint">Contacts needed to approve fund recovery</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Time Lock</label>
+        <input class="form-input" value="24 hours" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Decoy Amount</label>
+        <input class="form-input" value="0.05 SOL ($9.50)" readonly>
+        <div class="form-hint">Sent to attacker to make compliance look real</div>
+      </div>
+      <button class="btn btn-primary" onclick="activateProtection()">Activate Protection</button>
+    </div>
+
+    <!-- State: armed -->
+    <div id="state-armed" style="display:none">
+      <div class="scream-status">
+        <div class="status-header">
+          <div class="status-title">Protection Status</div>
+          <div class="status-badge badge-armed">ARMED</div>
+        </div>
+        <div class="status-row"><span class="status-label">Vault Balance</span><span class="status-value" id="vault-bal">5.00 SOL</span></div>
+        <div class="status-row"><span class="status-label">Time Lock</span><span class="status-value">24 hours</span></div>
+        <div class="status-row"><span class="status-label">Threshold</span><span class="status-value">2 of 3</span></div>
+        <div class="status-row"><span class="status-label">Decoy</span><span class="status-value">0.05 SOL</span></div>
+      </div>
+
+      <div class="section-title">Emergency Contacts</div>
+      <div class="contact-list">
+        <div class="contact-item">
+          <div class="contact-left"><div class="contact-dot dot-standby"></div>Alex M.</div>
+          <div class="contact-status">Ready</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-left"><div class="contact-dot dot-standby"></div>Sarah K.</div>
+          <div class="contact-status">Ready</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-left"><div class="contact-dot dot-standby"></div>Mike T.</div>
+          <div class="contact-status">Ready</div>
+        </div>
+      </div>
+
+      <button class="btn btn-outline" onclick="depositMore()">Deposit to Vault</button>
+
+      <div style="margin-top:24px; padding:16px; background:var(--surface); border-radius:12px;">
+        <div style="font-size:12px; color:var(--text2); margin-bottom:8px;">Guardian Agent</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse-red 2s infinite"></div>
+          <span style="font-size:13px;">Monitoring active &mdash; risk: LOW</span>
+        </div>
+        <div style="font-size:11px; color:var(--text2); margin-top:6px;">Watching for suspicious outflows, rapid transactions</div>
+      </div>
+
+      <div style="text-align:center; margin-top:20px;">
+        <button style="background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;text-decoration:underline;" onclick="simulatePanic()">
+          Simulate Panic Trigger
+        </button>
+      </div>
+    </div>
+
+    <!-- State: panic triggered -->
+    <div id="state-panic" style="display:none">
+      <div class="scream-status">
+        <div class="status-header">
+          <div class="status-title">Protection Status</div>
+          <div class="status-badge badge-panic">PANIC</div>
+        </div>
+        <div class="status-row"><span class="status-label">Vault Balance</span><span class="status-value" style="color:var(--green)">12.35 SOL</span></div>
+        <div class="status-row"><span class="status-label">Time Lock</span><span class="status-value" id="timelock-remaining">23h 59m remaining</span></div>
+        <div class="status-row"><span class="status-label">Decoy Sent</span><span class="status-value" style="color:var(--red)">0.05 SOL</span></div>
+        <div class="status-row"><span class="status-label">Wallet</span><span class="status-value" style="color:var(--red)">COMPROMISED</span></div>
+      </div>
+
+      <div class="section-title">Emergency Contacts</div>
+      <div class="contact-list">
+        <div class="contact-item">
+          <div class="contact-left"><div class="contact-dot dot-alerted"></div>Alex M.</div>
+          <div class="contact-status" style="color:var(--orange)">Alerted</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-left"><div class="contact-dot dot-alerted"></div>Sarah K.</div>
+          <div class="contact-status" style="color:var(--orange)">Alerted</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-left"><div class="contact-dot dot-alerted"></div>Mike T.</div>
+          <div class="contact-status" style="color:var(--orange)">Alerted</div>
+        </div>
+      </div>
+
+      <div class="info-banner" style="border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.05);">
+        Your funds are safe in the time-locked vault. Wait for the lock
+        to expire, then initiate recovery with your emergency contacts.
+      </div>
+
+      <button class="btn btn-primary" onclick="initiateRecovery()">Initiate Recovery</button>
+    </div>
+
+    <!-- State: recovering -->
+    <div id="state-recovering" style="display:none">
+      <div class="scream-status">
+        <div class="status-header">
+          <div class="status-title">Protection Status</div>
+          <div class="status-badge badge-recovering">RECOVERING</div>
+        </div>
+        <div class="status-row"><span class="status-label">Vault Balance</span><span class="status-value" style="color:var(--green)">12.35 SOL</span></div>
+        <div class="status-row"><span class="status-label">Approvals</span><span class="status-value" id="approval-count">0 / 2</span></div>
+      </div>
+
+      <div class="section-title">Contact Approvals</div>
+      <div class="contact-list" id="recovery-contacts">
+        <div class="contact-item" id="rc1">
+          <div class="contact-left"><div class="contact-dot dot-alerted" id="rc1-dot"></div>Alex M.</div>
+          <div class="contact-status" id="rc1-status" style="color:var(--orange)">Pending</div>
+        </div>
+        <div class="contact-item" id="rc2">
+          <div class="contact-left"><div class="contact-dot dot-alerted" id="rc2-dot"></div>Sarah K.</div>
+          <div class="contact-status" id="rc2-status" style="color:var(--orange)">Pending</div>
+        </div>
+        <div class="contact-item" id="rc3">
+          <div class="contact-left"><div class="contact-dot dot-alerted" id="rc3-dot"></div>Mike T.</div>
+          <div class="contact-status" id="rc3-status" style="color:var(--orange)">Pending</div>
+        </div>
+      </div>
+
+      <div class="info-banner">
+        Waiting for <strong>2 of 3</strong> contacts to approve recovery.
+        Once threshold is met, you can claim your funds.
+      </div>
+
+      <button class="btn btn-outline" onclick="simulateApproval(1)" id="approve-btn-1">Simulate: Alex Approves</button>
+      <button class="btn btn-outline" onclick="simulateApproval(2)" id="approve-btn-2">Simulate: Sarah Approves</button>
+      <button class="btn btn-primary" onclick="claimFunds()" id="claim-btn" style="display:none">Claim 12.35 SOL</button>
+    </div>
+
+    <!-- State: recovered -->
+    <div id="state-recovered" style="display:none">
+      <div class="scream-status">
+        <div class="status-header">
+          <div class="status-title">Protection Status</div>
+          <div class="status-badge badge-recovered">RECOVERED</div>
+        </div>
+        <div class="status-row"><span class="status-label">Recovered</span><span class="status-value" style="color:var(--green)">12.35 SOL</span></div>
+        <div class="status-row"><span class="status-label">Decoy Lost</span><span class="status-value" style="color:var(--text2)">0.05 SOL</span></div>
+        <div class="status-row"><span class="status-label">Attacker</span><span class="status-value" style="color:var(--red)">FLAGGED</span></div>
+      </div>
+
+      <div class="section-title">Incident Summary</div>
+      <div class="contact-list">
+        <div class="contact-item">
+          <div class="contact-left"><div class="contact-dot dot-approved"></div>Alex M.</div>
+          <div class="contact-status" style="color:var(--green)">Approved</div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-left"><div class="contact-dot dot-approved"></div>Sarah K.</div>
+          <div class="contact-status" style="color:var(--green)">Approved</div>
+        </div>
+      </div>
+
+      <div class="info-banner" style="border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.05);">
+        Funds recovered successfully. The attacker's address has been
+        permanently flagged on-chain. All transaction evidence is
+        available on Solana Explorer for law enforcement.
+      </div>
+
+      <button class="btn btn-outline" onclick="viewOnExplorer()">View on Solana Explorer</button>
+      <button class="btn btn-primary" onclick="resetDemo()">Reset Demo</button>
+    </div>
+  </div>
+
+  <!-- PIN Entry Modal -->
+  <div class="pin-modal" id="pin-modal">
+    <div class="pin-title">Enter PIN to Send</div>
+    <div class="pin-subtitle">The attacker is watching. Enter your duress PIN<br>to trigger SCREAM protection silently.</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+      <div class="pin-dot" id="pd4"></div>
+      <div class="pin-dot" id="pd5"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinInput(1)">1</button>
+      <button class="pin-key" onclick="pinInput(2)">2</button>
+      <button class="pin-key" onclick="pinInput(3)">3</button>
+      <button class="pin-key" onclick="pinInput(4)">4</button>
+      <button class="pin-key" onclick="pinInput(5)">5</button>
+      <button class="pin-key" onclick="pinInput(6)">6</button>
+      <button class="pin-key" onclick="pinInput(7)">7</button>
+      <button class="pin-key" onclick="pinInput(8)">8</button>
+      <button class="pin-key" onclick="pinInput(9)">9</button>
+      <button class="pin-key empty"></button>
+      <button class="pin-key" onclick="pinInput(0)">0</button>
+      <button class="pin-key delete" onclick="pinDelete()">&#9003;</button>
+    </div>
+  </div>
+
+  <!-- Cascade Animation Overlay -->
+  <div class="cascade-overlay" id="cascade-overlay">
+    <div class="cascade-title" style="color:var(--red)">PANIC CASCADE</div>
+    <div class="cascade-step" id="cs0">
+      <div class="cascade-check check-pending" id="cc0">&#9679;</div>
+      <div>Sweeping funds to time-locked vault...</div>
+    </div>
+    <div class="cascade-step" id="cs1">
+      <div class="cascade-check check-pending" id="cc1">&#9679;</div>
+      <div>Sending 0.05 SOL decoy to attacker...</div>
+    </div>
+    <div class="cascade-step" id="cs2">
+      <div class="cascade-check check-pending" id="cc2">&#9679;</div>
+      <div>Alerting 3 emergency contacts...</div>
+    </div>
+    <div class="cascade-step" id="cs3">
+      <div class="cascade-check check-pending" id="cc3">&#9679;</div>
+      <div>Flagging wallet as compromised...</div>
+    </div>
+    <div class="cascade-step" id="cs4">
+      <div class="cascade-check check-pending" id="cc4">&#9679;</div>
+      <div>Flagging attacker address...</div>
+    </div>
+    <div class="cascade-timer" id="cascade-timer">
+      Cascade completed in
+      <div class="cascade-elapsed" id="cascade-time">0.00s</div>
+      <div style="margin-top:4px;">Single Solana transaction</div>
+    </div>
+    <div class="cascade-dismiss" id="cascade-dismiss">
+      <button class="btn btn-outline" onclick="dismissCascade()">Continue</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // State
+  let currentState = 'setup';
+  let pinDigits = [];
+  let approvals = 0;
+
+  // Tab switching
+  function showTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+    if (tab === 'activity') {
+      document.querySelectorAll('.tab')[0].classList.add('active');
+      document.getElementById('panel-activity').classList.add('active');
+    } else {
+      document.querySelectorAll('.tab')[1].classList.add('active');
+      document.getElementById('panel-scream').classList.add('active');
+    }
+  }
+
+  function showState(state) {
+    currentState = state;
+    ['setup', 'armed', 'panic', 'recovering', 'recovered'].forEach(s => {
+      document.getElementById('state-' + s).style.display = s === state ? 'block' : 'none';
+    });
+  }
+
+  // Setup -> Armed
+  function activateProtection() {
+    const pin = document.getElementById('setup-pin').value;
+    if (pin.length < 4) {
+      document.getElementById('setup-pin').style.borderColor = 'var(--red)';
+      return;
+    }
+    showState('armed');
+    document.getElementById('balance').textContent = '7.40 SOL';
+  }
+
+  function depositMore() {
+    const bal = document.getElementById('vault-bal');
+    bal.textContent = '7.00 SOL';
+    document.getElementById('balance').textContent = '5.40 SOL';
+  }
+
+  // Panic flow
+  function simulatePanic() {
+    document.getElementById('pin-modal').classList.add('active');
+    pinDigits = [];
+    updatePinDots();
+  }
+
+  function pinInput(n) {
+    if (pinDigits.length >= 6) return;
+    pinDigits.push(n);
+    updatePinDots();
+    if (pinDigits.length === 6) {
+      setTimeout(() => {
+        document.getElementById('pin-modal').classList.remove('active');
+        runCascade();
+      }, 300);
+    }
+  }
+
+  function pinDelete() {
+    pinDigits.pop();
+    updatePinDots();
+  }
+
+  function updatePinDots() {
+    for (let i = 0; i < 6; i++) {
+      const dot = document.getElementById('pd' + i);
+      dot.classList.toggle('filled', i < pinDigits.length);
+    }
+  }
+
+  // Cascade animation
+  function runCascade() {
+    const overlay = document.getElementById('cascade-overlay');
+    overlay.classList.add('active');
+
+    // Reset steps
+    for (let i = 0; i < 5; i++) {
+      document.getElementById('cs' + i).classList.remove('visible');
+      const check = document.getElementById('cc' + i);
+      check.classList.remove('check-done');
+      check.classList.add('check-pending');
+      check.innerHTML = '&#9679;';
+    }
+    document.getElementById('cascade-timer').classList.remove('visible');
+    document.getElementById('cascade-dismiss').classList.remove('visible');
+
+    const startTime = performance.now();
+
+    // Animate each step
+    const delays = [200, 500, 800, 1050, 1250];
+    delays.forEach((delay, i) => {
+      setTimeout(() => {
+        const step = document.getElementById('cs' + i);
+        step.classList.add('visible');
+        const check = document.getElementById('cc' + i);
+        check.classList.remove('check-pending');
+        check.classList.add('check-done');
+        check.innerHTML = '&#10003;';
+      }, delay);
+    });
+
+    // Show completion
+    setTimeout(() => {
+      const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+      document.getElementById('cascade-time').textContent = '0.41s';
+      document.getElementById('cascade-timer').classList.add('visible');
+      document.getElementById('cascade-dismiss').classList.add('visible');
+    }, 1600);
+  }
+
+  function dismissCascade() {
+    document.getElementById('cascade-overlay').classList.remove('active');
+    document.getElementById('balance').textContent = '0.00 SOL';
+    showState('panic');
+    showTab('scream');
+  }
+
+  // Recovery
+  function initiateRecovery() {
+    approvals = 0;
+    showState('recovering');
+    document.getElementById('approval-count').textContent = '0 / 2';
+  }
+
+  function simulateApproval(n) {
+    const dot = document.getElementById('rc' + n + '-dot');
+    const status = document.getElementById('rc' + n + '-status');
+    const btn = document.getElementById('approve-btn-' + n);
+
+    dot.classList.remove('dot-alerted');
+    dot.classList.add('dot-approved');
+    status.textContent = 'Approved';
+    status.style.color = 'var(--green)';
+    btn.style.display = 'none';
+
+    approvals++;
+    document.getElementById('approval-count').textContent = approvals + ' / 2';
+
+    if (approvals >= 2) {
+      document.getElementById('claim-btn').style.display = 'block';
+    }
+  }
+
+  function claimFunds() {
+    document.getElementById('balance').textContent = '12.35 SOL';
+    showState('recovered');
+  }
+
+  function viewOnExplorer() {
+    window.open('https://explorer.solana.com/address/5zPdLCuRqcPqN5TZxR6yUcfTJ9ufLhoZAMVn6pEFXnyc?cluster=devnet', '_blank');
+  }
+
+  function resetDemo() {
+    showState('setup');
+    document.getElementById('balance').textContent = '12.40 SOL';
+    document.getElementById('vault-bal').textContent = '5.00 SOL';
+    document.getElementById('setup-pin').value = '';
+    document.getElementById('setup-pin').style.borderColor = 'var(--border)';
+    pinDigits = [];
+    approvals = 0;
+
+    // Reset recovery contacts
+    for (let i = 1; i <= 3; i++) {
+      const dot = document.getElementById('rc' + i + '-dot');
+      const status = document.getElementById('rc' + i + '-status');
+      if (dot) { dot.classList.remove('dot-approved'); dot.classList.add('dot-alerted'); }
+      if (status) { status.textContent = 'Pending'; status.style.color = 'var(--orange)'; }
+    }
+    document.getElementById('approve-btn-1').style.display = '';
+    document.getElementById('approve-btn-2').style.display = '';
+    document.getElementById('claim-btn').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
