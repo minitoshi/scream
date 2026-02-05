@@ -1,0 +1,1145 @@
+{
+  "address": "5zPdLCuRqcPqN5TZxR6yUcfTJ9ufLhoZAMVn6pEFXnyc",
+  "metadata": {
+    "name": "scream",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "SCREAM - Solana Crypto Response Emergency Action Manager"
+  },
+  "instructions": [
+    {
+      "name": "approve_recovery",
+      "discriminator": [
+        148,
+        96,
+        41,
+        38,
+        108,
+        189,
+        129,
+        214
+      ],
+      "accounts": [
+        {
+          "name": "contact",
+          "signer": true
+        },
+        {
+          "name": "owner"
+        },
+        {
+          "name": "panic_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  110,
+                  105,
+                  99,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "alert_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  108,
+                  101,
+                  114,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "contact"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_from_vault",
+      "discriminator": [
+        16,
+        182,
+        115,
+        246,
+        227,
+        50,
+        4,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "panic_config",
+            "vault"
+          ]
+        },
+        {
+          "name": "panic_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  110,
+                  105,
+                  99,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "deposit",
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "panic_config",
+            "vault"
+          ]
+        },
+        {
+          "name": "panic_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  110,
+                  105,
+                  99,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize_config",
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "panic_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  110,
+                  105,
+                  99,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "trigger_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "contacts",
+          "type": {
+            "vec": "pubkey"
+          }
+        },
+        {
+          "name": "recovery_threshold",
+          "type": "u8"
+        },
+        {
+          "name": "time_lock_duration",
+          "type": "i64"
+        },
+        {
+          "name": "decoy_lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initiate_recovery",
+      "discriminator": [
+        132,
+        148,
+        60,
+        74,
+        49,
+        178,
+        235,
+        187
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "panic_config",
+            "vault"
+          ]
+        },
+        {
+          "name": "panic_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  110,
+                  105,
+                  99,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "trigger_panic",
+      "discriminator": [
+        183,
+        33,
+        7,
+        231,
+        71,
+        159,
+        153,
+        148
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "panic_config",
+            "vault"
+          ]
+        },
+        {
+          "name": "panic_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  110,
+                  105,
+                  99,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "compromised_flag",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  109,
+                  112,
+                  114,
+                  111,
+                  109,
+                  105,
+                  115,
+                  101,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "attacker",
+          "docs": [
+            "The attacker's address to receive decoy funds and be flagged"
+          ],
+          "writable": true
+        },
+        {
+          "name": "attacker_flag",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  97,
+                  99,
+                  107,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "attacker"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "trigger_proof",
+          "type": "bytes"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AlertAccount",
+      "discriminator": [
+        231,
+        138,
+        190,
+        205,
+        186,
+        17,
+        37,
+        123
+      ]
+    },
+    {
+      "name": "AttackerFlag",
+      "discriminator": [
+        69,
+        228,
+        225,
+        106,
+        246,
+        88,
+        171,
+        171
+      ]
+    },
+    {
+      "name": "CompromisedFlag",
+      "discriminator": [
+        209,
+        238,
+        223,
+        112,
+        173,
+        10,
+        30,
+        134
+      ]
+    },
+    {
+      "name": "PanicConfig",
+      "discriminator": [
+        214,
+        246,
+        190,
+        238,
+        9,
+        25,
+        116,
+        248
+      ]
+    },
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "ConfigInitialized",
+      "discriminator": [
+        181,
+        49,
+        200,
+        156,
+        19,
+        167,
+        178,
+        91
+      ]
+    },
+    {
+      "name": "Deposited",
+      "discriminator": [
+        111,
+        141,
+        26,
+        45,
+        161,
+        35,
+        100,
+        57
+      ]
+    },
+    {
+      "name": "FundsRecovered",
+      "discriminator": [
+        77,
+        226,
+        1,
+        193,
+        147,
+        128,
+        69,
+        18
+      ]
+    },
+    {
+      "name": "PanicTriggered",
+      "discriminator": [
+        64,
+        98,
+        134,
+        88,
+        117,
+        182,
+        107,
+        11
+      ]
+    },
+    {
+      "name": "RecoveryApproved",
+      "discriminator": [
+        97,
+        50,
+        186,
+        253,
+        67,
+        239,
+        34,
+        47
+      ]
+    },
+    {
+      "name": "RecoveryInitiated",
+      "discriminator": [
+        138,
+        165,
+        92,
+        207,
+        123,
+        93,
+        223,
+        98
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidTriggerProof",
+      "msg": "Invalid trigger proof: hash does not match stored trigger hash"
+    },
+    {
+      "code": 6001,
+      "name": "PanicAlreadyTriggered",
+      "msg": "Panic has already been triggered for this config"
+    },
+    {
+      "code": 6002,
+      "name": "PanicNotTriggered",
+      "msg": "Panic has not been triggered yet"
+    },
+    {
+      "code": 6003,
+      "name": "TimeLockActive",
+      "msg": "Time-lock has not expired yet"
+    },
+    {
+      "code": 6004,
+      "name": "RecoveryNotInitiated",
+      "msg": "Recovery has not been initiated"
+    },
+    {
+      "code": 6005,
+      "name": "RecoveryAlreadyInitiated",
+      "msg": "Recovery has already been initiated"
+    },
+    {
+      "code": 6006,
+      "name": "InsufficientApprovals",
+      "msg": "Insufficient approvals for recovery"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidContact",
+      "msg": "Contact is not in the emergency contacts list"
+    },
+    {
+      "code": 6008,
+      "name": "AlreadyApproved",
+      "msg": "Contact has already approved recovery"
+    },
+    {
+      "code": 6009,
+      "name": "TooManyContacts",
+      "msg": "Too many contacts (max 5)"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidThreshold",
+      "msg": "Recovery threshold must be <= number of contacts"
+    },
+    {
+      "code": 6011,
+      "name": "InsufficientFundsForDecoy",
+      "msg": "Insufficient funds for decoy transfer"
+    },
+    {
+      "code": 6012,
+      "name": "ContactAccountMismatch",
+      "msg": "Number of remaining accounts does not match number of contacts"
+    }
+  ],
+  "types": [
+    {
+      "name": "AlertAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "contact",
+            "type": "pubkey"
+          },
+          {
+            "name": "alerted_at",
+            "docs": [
+              "Timestamp when alert was created"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "has_approved",
+            "docs": [
+              "Whether this contact has approved recovery"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AttackerFlag",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "attacker",
+            "type": "pubkey"
+          },
+          {
+            "name": "reported_by",
+            "docs": [
+              "Who flagged this attacker"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "flagged_at",
+            "docs": [
+              "Timestamp when flagged"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CompromisedFlag",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "flagged_at",
+            "docs": [
+              "Timestamp when the wallet was flagged compromised"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "contacts_count",
+            "type": "u8"
+          },
+          {
+            "name": "time_lock_duration",
+            "type": "i64"
+          },
+          {
+            "name": "decoy_lamports",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Deposited",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "vault_balance",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundsRecovered",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PanicConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "trigger_hash",
+            "docs": [
+              "SHA-256 hash of the duress trigger (e.g., PIN)"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "contacts",
+            "docs": [
+              "Emergency contacts who can approve recovery"
+            ],
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "recovery_threshold",
+            "docs": [
+              "Number of contacts required to approve recovery"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "time_lock_duration",
+            "docs": [
+              "Time-lock duration in seconds"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "decoy_lamports",
+            "docs": [
+              "Decoy amount in lamports to send to attacker"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "is_triggered",
+            "docs": [
+              "Whether panic has been triggered"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PanicTriggered",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "attacker",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault_balance",
+            "type": "u64"
+          },
+          {
+            "name": "decoy_sent",
+            "type": "u64"
+          },
+          {
+            "name": "locked_until",
+            "type": "i64"
+          },
+          {
+            "name": "contacts_alerted",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RecoveryApproved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "contact",
+            "type": "pubkey"
+          },
+          {
+            "name": "approvals_so_far",
+            "type": "u8"
+          },
+          {
+            "name": "threshold",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RecoveryInitiated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault_balance",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "locked_until",
+            "docs": [
+              "Timestamp when funds can be recovered (0 if not locked)"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "recovery_initiated",
+            "docs": [
+              "Whether recovery has been initiated"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "approvals",
+            "docs": [
+              "Number of approvals received so far"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

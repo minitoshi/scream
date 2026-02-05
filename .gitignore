@@ -1,0 +1,31 @@
+# Environment variables (NEVER COMMIT)
+.env
+.env.local
+.env.*.local
+
+# Solana keypairs
+*.json
+!package.json
+!tsconfig.json
+!idl/scream.json
+
+# Dependencies
+node_modules/
+target/
+
+# Build artifacts
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Anchor
+.anchor/
