@@ -6,7 +6,7 @@ Duress-activated protection for Solana wallets. One trigger. Everything protecte
 
 > **Vision:** SCREAM is not a standalone dApp. It's on-chain infrastructure and an SDK that wallet providers (Phantom, Solflare, Backpack) integrate natively. Protection lives inside your wallet — invisible until you need it.
 
-**[Live Wallet Demo](demo/index.html)** | **[Devnet Program](https://explorer.solana.com/address/5zPdLCuRqcPqN5TZxR6yUcfTJ9ufLhoZAMVn6pEFXnyc?cluster=devnet)** | **[SDK Docs](#sdk-integration)**
+**[Live Wallet Demo](https://minitoshi.github.io/scream/)** | **[Devnet Program](https://explorer.solana.com/address/5zPdLCuRqcPqN5TZxR6yUcfTJ9ufLhoZAMVn6pEFXnyc?cluster=devnet)** | **[SDK Docs](#sdk-integration)**
 
 ## The Problem
 
